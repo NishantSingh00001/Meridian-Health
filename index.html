@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Customer Data Bridge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EFEFEB; --paper-dark:#E2E2DC;
+  --ink:#0A0A0A; --ink-soft:#5C5C58;
+  --blue:#0A0A0A; --blue-deep:#000000;
+  --accent:#FF5A1F;
+  --amber:#C97A1A; --teal:#1A8F5C; --red:#C4291B;
+  --card:#FFFFFF; --line:#0A0A0A;
+  --shadow-clay: 7px 7px 0 var(--accent), inset 0 1px 0 rgba(255,255,255,.9);
+  --shadow-soft: 0 10px 30px rgba(0,0,0,.14);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0A0A0A; --paper-dark:#000000;
+    --ink:#F4F4F1; --ink-soft:#A3A39C;
+    --card:#141412; --line:#F4F4F1;
+    --blue:#F4F4F1; --blue-deep:#FFFFFF;
+    --accent:#FF7A3D;
+    --shadow-clay: 7px 7px 0 var(--accent), inset 0 1px 0 rgba(255,255,255,.05);
+    --shadow-soft: 0 10px 30px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0A0A0A; --paper-dark:#000000;
+  --ink:#F4F4F1; --ink-soft:#A3A39C;
+  --card:#141412; --line:#F4F4F1;
+  --blue:#F4F4F1; --blue-deep:#FFFFFF;
+  --accent:#FF7A3D;
+  --shadow-clay: 7px 7px 0 var(--accent), inset 0 1px 0 rgba(255,255,255,.05);
+  --shadow-soft: 0 10px 30px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  min-height:100%;
+}
+h1,h2,h3,.display{font-family:'Space Grotesk',sans-serif}
+.mono{font-family:'IBM Plex Mono',monospace}
+button{font-family:inherit;cursor:pointer}
+
+/* layout */
+.app{display:grid; grid-template-columns:230px 1fr; min-height:100vh}
+@media (max-width:860px){ .app{grid-template-columns:1fr} }
+
+.rail{
+  background:var(--card); border-right:3px solid var(--line);
+  padding:22px 18px; display:flex; flex-direction:column; gap:28px;
+}
+@media (max-width:860px){ .rail{border-right:none; border-bottom:3px solid var(--line); flex-direction:row; align-items:center; justify-content:space-between; padding:14px 18px} }
+
+.brand{display:flex; align-items:center; gap:10px}
+.brand .mark{width:34px; height:34px; background:var(--blue); border:2.5px solid var(--line); border-radius:9px; box-shadow:3px 3px 0 var(--line); flex:0 0 auto; position:relative; overflow:hidden}
+.brand .mark::after{content:"";position:absolute; inset:7px; border:2.5px solid #fff; border-radius:50%; border-right-color:transparent; border-bottom-color:transparent; transform:rotate(45deg)}
+.brand .name{font-weight:700; font-size:15px; line-height:1.15}
+.brand .name small{display:block; font-size:10.5px; font-weight:500; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace; letter-spacing:.02em}
+
+.nav{display:flex; flex-direction:column; gap:6px}
+@media (max-width:860px){ .nav{display:none} }
+.nav button{
+  text-align:left; background:transparent; border:2px solid transparent; border-radius:10px;
+  padding:10px 12px; font-size:13.5px; font-weight:600; color:var(--ink-soft);
+  display:flex; align-items:center; gap:10px; transition:transform .15s ease, background .15s ease, border-color .15s ease;
+}
+.nav button .dot{width:7px; height:7px; border-radius:50%; background:currentColor; opacity:.35}
+.nav button:hover{background:var(--paper-dark); transform:translateX(2px)}
+.nav button.active{background:var(--blue); color:var(--card); border-color:var(--line); box-shadow:4px 4px 0 var(--line)}
+.nav button.active .dot{background:var(--card); opacity:1}
+
+.rail-foot{margin-top:auto; font-size:11px; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace}
+@media (max-width:860px){ .rail-foot{display:none} }
+
+main{padding:28px 32px 70px; max-width:1180px; width:100%; margin:0 auto}
+@media (max-width:640px){ main{padding:18px 16px 50px} }
+
+.topline{display:flex; justify-content:space-between; align-items:flex-end; gap:16px; margin-bottom:26px; flex-wrap:wrap}
+.eyebrow-free h1{font-size:clamp(32px,5.4vw,52px); margin:0 0 6px; font-weight:700; letter-spacing:-0.02em; line-height:.98}
+.topline p{margin:0; color:var(--ink-soft); font-size:14px; max-width:46ch}
+.pill{border:2px solid var(--line); border-radius:999px; padding:7px 14px; font-size:12.5px; font-weight:600; background:var(--card); box-shadow:3px 3px 0 var(--accent); display:flex; align-items:center; gap:7px}
+.pill .blip{width:7px; height:7px; border-radius:50%; background:var(--teal); box-shadow:0 0 0 3px rgba(15,184,136,.25)}
+
+/* page fade */
+.page{display:none}
+.page.active{display:block; animation:rise .6s cubic-bezier(.16,1,.3,1) both}
+@keyframes rise{from{opacity:0; transform:translateY(22px) scale(.99)} to{opacity:1; transform:translateY(0) scale(1)}}
+
+.wipe{position:fixed; inset:0; background:var(--ink); z-index:999; transform:scaleY(0); transform-origin:top; pointer-events:none}
+.wipe.go{animation:wipeDown .55s cubic-bezier(.76,0,.24,1) forwards}
+@keyframes wipeDown{
+  0%{transform:scaleY(0); transform-origin:top}
+  48%{transform:scaleY(1); transform-origin:top}
+  52%{transform:scaleY(1); transform-origin:bottom}
+  100%{transform:scaleY(0); transform-origin:bottom}
+}
+
+/* clay+brutalist card */
+.card{
+  background:var(--card); border:2.5px solid var(--line); border-radius:18px;
+  box-shadow:var(--shadow-clay);
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.card:hover{transform:translate(-2px,-2px); box-shadow:9px 9px 0 var(--accent), inset 0 1px 0 rgba(255,255,255,.5)}
+
+.grid-stats{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px}
+@media (max-width:760px){ .grid-stats{grid-template-columns:repeat(2,1fr)} }
+.stat{padding:18px}
+.stat .num{font-family:'Space Grotesk'; font-size:30px; font-weight:700; line-height:1}
+.stat .lbl{margin-top:6px; font-size:12.5px; color:var(--ink-soft); font-weight:600}
+.stat .delta{margin-top:10px; font-size:11.5px; font-family:'IBM Plex Mono'; display:inline-block; padding:3px 8px; border-radius:6px; border:1.5px solid var(--line)}
+.delta.up{background:rgba(15,184,136,.18); color:#0a7a5a}
+.delta.flat{background:rgba(255,178,62,.22); color:#8a5a00}
+:root[data-theme="dark"] .delta.up, @media (prefers-color-scheme:dark){.delta.up{color:#5fe3bc}}
+
+.section-h{display:flex; justify-content:space-between; align-items:center; margin:34px 0 14px}
+.section-h h2{font-size:18px; margin:0}
+.section-h .count{font-family:'IBM Plex Mono'; font-size:12px; color:var(--ink-soft)}
+
+.conn-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
+@media (max-width:900px){ .conn-grid{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:640px){ .conn-grid{grid-template-columns:1fr} }
+.conn{padding:18px; display:flex; flex-direction:column; gap:12px; cursor:pointer}
+.conn-top{display:flex; justify-content:space-between; align-items:flex-start}
+.conn .sysname{font-weight:700; font-size:15px}
+.conn .sysmeta{font-size:12px; color:var(--ink-soft); margin-top:2px}
+.status{font-size:10.5px; font-weight:700; padding:4px 9px; border-radius:7px; border:1.5px solid var(--line); font-family:'IBM Plex Mono'; text-transform:uppercase; letter-spacing:.03em}
+.status.live{background:var(--teal); color:#07281f}
+.status.warn{background:var(--amber); color:#3a2500}
+.status.err{background:var(--red); color:#fff}
+.barwrap{height:8px; background:var(--paper-dark); border:1.5px solid var(--line); border-radius:5px; overflow:hidden}
+.barfill{height:100%; background:var(--blue)}
+.conn-foot{display:flex; justify-content:space-between; font-size:11.5px; color:var(--ink-soft); font-family:'IBM Plex Mono'}
+
+.feat-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px}
+@media (max-width:700px){ .feat-grid{grid-template-columns:1fr} }
+.feat{display:flex; gap:10px; padding:13px 14px; align-items:flex-start}
+.feat .chk{width:20px; height:20px; border:2px solid var(--line); border-radius:6px; flex:0 0 auto; display:flex; align-items:center; justify-content:center; background:var(--blue); margin-top:1px}
+.feat .chk svg{width:12px;height:12px}
+.feat span{font-size:13px; line-height:1.4; font-weight:500}
+
+/* mapping studio */
+.studio-wrap{display:grid; grid-template-columns:1fr 280px; gap:18px}
+@media (max-width:980px){ .studio-wrap{grid-template-columns:1fr} }
+.canvas-card{padding:10px; overflow:hidden}
+.cols{display:grid; grid-template-columns:1fr 1fr; gap:0}
+.col h3{font-size:12px; text-transform:none; font-weight:700; margin:12px 16px 10px; color:var(--ink-soft)}
+.field{
+  margin:0 12px 10px; padding:11px 13px; background:var(--paper); border:2px solid var(--line);
+  border-radius:11px; font-size:13px; font-weight:600; display:flex; justify-content:space-between; align-items:center;
+  box-shadow:3px 3px 0 var(--accent); position:relative; transition:transform .15s ease;
+}
+.field:hover{transform:translateX(2px)}
+.field.matched{border-color:var(--teal)}
+.field.pending{border-color:var(--amber)}
+.field .type{font-family:'IBM Plex Mono'; font-size:10px; color:var(--ink-soft); font-weight:500}
+svg.wires{position:absolute; inset:0; width:100%; height:100%; pointer-events:none}
+svg.wires path{fill:none; stroke-width:2.5; stroke-dasharray:420; stroke-dashoffset:420; animation:draw 1s ease forwards}
+svg.wires path.m{stroke:var(--teal)}
+svg.wires path.p{stroke:var(--amber); stroke-dasharray:5 5}
+@keyframes draw{to{stroke-dashoffset:0}}
+
+.side .card{padding:16px; margin-bottom:14px}
+.side h3{font-size:13px; margin:0 0 10px}
+.rulebox{font-size:12.5px; line-height:1.6; color:var(--ink-soft)}
+.rulebox b{color:var(--ink)}
+.btn{
+  width:100%; padding:11px; border:2.5px solid var(--line); border-radius:11px; background:var(--blue); color:var(--card);
+  font-weight:700; font-size:13.5px; box-shadow:4px 4px 0 var(--line); transition:transform .12s ease, box-shadow .12s ease;
+}
+.btn:hover{transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--line)}
+.btn:active{transform:translate(0,0); box-shadow:2px 2px 0 var(--line)}
+.btn.ghost{background:var(--card); color:var(--ink)}
+
+.exc-row{display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1.5px dashed var(--line); font-size:12.5px}
+.exc-row:last-child{border:none}
+
+::selection{background:var(--amber)}
+@media (prefers-reduced-motion: reduce){ *{animation-duration:.01ms !important; transition-duration:.01ms !important} }
+</style>
+</head>
+<body>
+<div class="wipe" id="wipe"></div>
+<div class="app">
+  <nav class="rail">
+    <div class="brand">
+      <div class="mark"></div>
+      <div class="name">Customer Data Bridge<small>workspace: Meridian Health</small></div>
+    </div>
+    <div class="nav">
+      <button class="active" data-page="overview"><span class="dot"></span>Workspace overview</button>
+      <button data-page="studio"><span class="dot"></span>Mapping studio</button>
+      <button data-page="validation"><span class="dot"></span>Validation queue</button>
+      <button data-page="history"><span class="dot"></span>Sync history</button>
+    </div>
+    <div class="rail-foot">12 modules · 103 features<br>scoped for this portfolio build</div>
+  </nav>
+
+  <main>
+    <section class="page active" id="page-overview">
+      <div class="topline">
+        <div class="eyebrow-free">
+          <h1>Workspace overview</h1>
+          <p>Every connector, mapping and exception in one place — nothing syncs without a visible trail.</p>
+        </div>
+        <div class="pill"><span class="blip"></span>4 syncs running</div>
+      </div>
+
+      <div class="grid-stats">
+        <div class="card stat"><div class="num">7</div><div class="lbl">Active connectors</div><div class="delta up">+1 this week</div></div>
+        <div class="card stat"><div class="num">99.2%</div><div class="lbl">Records matched</div><div class="delta up">+0.4%</div></div>
+        <div class="card stat"><div class="num">23</div><div class="lbl">Open exceptions</div><div class="delta flat">needs review</div></div>
+        <div class="card stat"><div class="num">1.8s</div><div class="lbl">Avg sync latency</div><div class="delta up">−120ms</div></div>
+      </div>
+
+      <div class="section-h"><h2>Connectors</h2><span class="count">7 total</span></div>
+      <div class="conn-grid">
+        <div class="conn card">
+          <div class="conn-top"><div><div class="sysname">Salesforce → Core CRM</div><div class="sysmeta">Field mapping · bidirectional</div></div><span class="status live">Live</span></div>
+          <div class="barwrap"><div class="barfill" style="width:96%"></div></div>
+          <div class="conn-foot"><span>96% mapped</span><span>synced 4m ago</span></div>
+        </div>
+        <div class="conn card">
+          <div class="conn-top"><div><div class="sysname">Zendesk → Support DB</div><div class="sysmeta">Field mapping · one-way</div></div><span class="status live">Live</span></div>
+          <div class="barwrap"><div class="barfill" style="width:88%"></div></div>
+          <div class="conn-foot"><span>88% mapped</span><span>synced 11m ago</span></div>
+        </div>
+        <div class="conn card">
+          <div class="conn-top"><div><div class="sysname">NetSuite → Billing</div><div class="sysmeta">Schema comparison pending</div></div><span class="status warn">Review</span></div>
+          <div class="barwrap"><div class="barfill" style="width:61%"></div></div>
+          <div class="conn-foot"><span>61% mapped</span><span>3 conflicts</span></div>
+        </div>
+        <div class="conn card">
+          <div class="conn-top"><div><div class="sysname">HubSpot → Marketing Hub</div><div class="sysmeta">Field mapping · bidirectional</div></div><span class="status live">Live</span></div>
+          <div class="barwrap"><div class="barfill" style="width:100%"></div></div>
+          <div class="conn-foot"><span>100% mapped</span><span>synced 1m ago</span></div>
+        </div>
+        <div class="conn card">
+          <div class="conn-top"><div><div class="sysname">Workday → HRIS</div><div class="sysmeta">Validation failing</div></div><span class="status err">Error</span></div>
+          <div class="barwrap"><div class="barfill" style="width:34%"></div></div>
+          <div class="conn-foot"><span>34% mapped</span><span>8 failed records</span></div>
+        </div>
+        <div class="conn card">
+          <div class="conn-top"><div><div class="sysname">Stripe → Finance Ledger</div><div class="sysmeta">Field mapping · one-way</div></div><span class="status live">Live</span></div>
+          <div class="barwrap"><div class="barfill" style="width:92%"></div></div>
+          <div class="conn-foot"><span>92% mapped</span><span>synced 7m ago</span></div>
+        </div>
+      </div>
+
+      <div class="section-h"><h2>Module coverage — this build</h2><span class="count">12 of 12 shown</span></div>
+      <div class="feat-grid">
+        <div class="card feat"><div class="chk">✓</div><span>Connector setup &amp; credential handling</span></div>
+        <div class="card feat"><div class="chk">✓</div><span>Schema comparison with diff highlighting</span></div>
+        <div class="card feat"><div class="chk">✓</div><span>Field mapping studio with live wiring</span></div>
+        <div class="card feat"><div class="chk">✓</div><span>Transformation rules per field</span></div>
+        <div class="card feat"><div class="chk">✓</div><span>Validation &amp; conflict detection</span></div>
+        <div class="card feat"><div class="chk">✓</div><span>Sync scheduling &amp; cadence control</span></div>
+        <div class="card feat"><div class="chk">✓</div><span>Retries, replay &amp; backoff policy</span></div>
+        <div class="card feat"><div class="chk">✓</div><span>Record-level lineage trail</span></div>
+        <div class="card feat"><div class="chk">✓</div><span>Live monitoring &amp; latency tracking</span></div>
+        <div class="card feat"><div class="chk">✓</div><span>Exception queue with resolution notes</span></div>
+        <div class="card feat"><div class="chk">✓</div><span>Access roles &amp; handoff log</span></div>
+        <div class="card feat"><div class="chk">✓</div><span>Per-connector sync history</span></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-studio">
+      <div class="topline">
+        <div class="eyebrow-free">
+          <h1>Mapping studio</h1>
+          <p>NetSuite → Billing — drag a source field to a target to wire it. Dashed amber lines are unresolved.</p>
+        </div>
+        <div class="pill"><span class="blip" style="background:var(--amber)"></span>3 conflicts</div>
+      </div>
+
+      <div class="studio-wrap">
+        <div class="canvas-card card">
+          <div class="cols" style="position:relative">
+            <svg class="wires" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <path class="m" d="M48,8 C70,8 65,8 92,8" />
+              <path class="m" d="M48,20 C70,20 65,19 92,19" />
+              <path class="p" d="M48,32 C70,32 65,30 92,30" />
+              <path class="m" d="M48,44 C70,44 65,41 92,41" />
+              <path class="p" d="M48,56 C70,56 65,52 92,52" />
+              <path class="m" d="M48,68 C70,68 65,63 92,63" />
+            </svg>
+            <div class="col">
+              <h3>Source — NetSuite</h3>
+              <div class="field matched">customer_internal_id <span class="type mono">string</span></div>
+              <div class="field matched">bill_to_entity <span class="type mono">ref</span></div>
+              <div class="field pending">tax_region_code <span class="type mono">enum</span></div>
+              <div class="field matched">invoice_currency <span class="type mono">string(3)</span></div>
+              <div class="field pending">payment_terms_id <span class="type mono">ref</span></div>
+              <div class="field matched">subsidiary <span class="type mono">ref</span></div>
+            </div>
+            <div class="col">
+              <h3>Target — Billing</h3>
+              <div class="field matched">customer_id <span class="type mono">uuid</span></div>
+              <div class="field matched">billing_contact <span class="type mono">ref</span></div>
+              <div class="field pending">tax_zone <span class="type mono">enum</span></div>
+              <div class="field matched">currency <span class="type mono">string(3)</span></div>
+              <div class="field pending">payment_terms <span class="type mono">ref</span></div>
+              <div class="field matched">legal_entity <span class="type mono">ref</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="side">
+          <div class="card">
+            <h3>Unresolved — tax_region_code</h3>
+            <div class="rulebox">NetSuite uses a <b>4-digit region enum</b>; Billing expects an <b>ISO tax zone string</b>. No direct crosswalk exists for 3 values.</div>
+            <div style="height:10px"></div>
+            <button class="btn">Suggest crosswalk</button>
+            <div style="height:8px"></div>
+            <button class="btn ghost">Mark as manual mapping</button>
+          </div>
+          <div class="card">
+            <h3>Exception queue</h3>
+            <div class="exc-row"><span>Region code 7731</span><span class="mono" style="color:var(--amber)">pending</span></div>
+            <div class="exc-row"><span>Region code 7733</span><span class="mono" style="color:var(--amber)">pending</span></div>
+            <div class="exc-row"><span>Terms id NET-45</span><span class="mono" style="color:var(--amber)">pending</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-validation">
+      <div class="topline">
+        <div class="eyebrow-free">
+          <h1>Validation queue</h1>
+          <p>Records that failed a rule before sync. Nothing reaches the target system unreviewed.</p>
+        </div>
+        <div class="pill"><span class="blip" style="background:var(--red)"></span>8 failing</div>
+      </div>
+      <div class="grid-stats">
+        <div class="card stat"><div class="num">8</div><div class="lbl">Failing records</div><div class="delta flat">Workday → HRIS</div></div>
+        <div class="card stat"><div class="num">14</div><div class="lbl">Rules active</div><div class="delta up">+2 this week</div></div>
+        <div class="card stat"><div class="num">96%</div><div class="lbl">Pass rate, 7d</div><div class="delta up">+1.1%</div></div>
+        <div class="card stat"><div class="num">41m</div><div class="lbl">Avg time to fix</div><div class="delta up">−9m</div></div>
+      </div>
+      <div class="section-h"><h2>Failing records</h2><span class="count">8 of 8</span></div>
+      <div class="card" style="padding:6px 4px">
+        <div class="exc-row" style="padding:12px 18px"><span><b>EMP-10432</b> — missing required field <span class="mono">cost_center</span></span><span class="status err">Blocked</span></div>
+        <div class="exc-row" style="padding:12px 18px"><span><b>EMP-10439</b> — <span class="mono">hire_date</span> fails format rule</span><span class="status err">Blocked</span></div>
+        <div class="exc-row" style="padding:12px 18px"><span><b>EMP-10447</b> — duplicate <span class="mono">employee_id</span></span><span class="status err">Blocked</span></div>
+        <div class="exc-row" style="padding:12px 18px"><span><b>EMP-10451</b> — <span class="mono">manager_ref</span> not found</span><span class="status warn">Review</span></div>
+        <div class="exc-row" style="padding:12px 18px"><span><b>EMP-10455</b> — <span class="mono">salary_band</span> out of range</span><span class="status warn">Review</span></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-history">
+      <div class="topline">
+        <div class="eyebrow-free">
+          <h1>Sync history</h1>
+          <p>Every run, every retry, every record count — searchable and exportable.</p>
+        </div>
+        <div class="pill"><span class="blip"></span>Live tail on</div>
+      </div>
+      <div class="card" style="padding:6px 4px">
+        <div class="exc-row" style="padding:12px 18px"><span><b>HubSpot → Marketing Hub</b> — 3,204 records</span><span class="mono" style="color:var(--teal)">success · 1m ago</span></div>
+        <div class="exc-row" style="padding:12px 18px"><span><b>Salesforce → Core CRM</b> — 8,112 records</span><span class="mono" style="color:var(--teal)">success · 4m ago</span></div>
+        <div class="exc-row" style="padding:12px 18px"><span><b>Stripe → Finance Ledger</b> — 902 records</span><span class="mono" style="color:var(--teal)">success · 7m ago</span></div>
+        <div class="exc-row" style="padding:12px 18px"><span><b>Zendesk → Support DB</b> — 1,544 records</span><span class="mono" style="color:var(--teal)">success · 11m ago</span></div>
+        <div class="exc-row" style="padding:12px 18px"><span><b>NetSuite → Billing</b> — 410 records, 3 skipped</span><span class="mono" style="color:var(--amber)">partial · 22m ago</span></div>
+        <div class="exc-row" style="padding:12px 18px"><span><b>Workday → HRIS</b> — 0 records</span><span class="mono" style="color:var(--red)">failed · retry 2/5</span></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+const btns=document.querySelectorAll('.nav button');
+const wipe=document.getElementById('wipe');
+btns.forEach(b=>b.addEventListener('click',()=>{
+  if(b.classList.contains('active'))return;
+  wipe.classList.remove('go'); void wipe.offsetWidth; wipe.classList.add('go');
+  btns.forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  setTimeout(()=>{
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById('page-'+b.dataset.page).classList.add('active');
+  },260);
+}));
+</script>
+</body>
+</html>
